@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký Nhóm Học Viên</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Đăng Ký Nhóm Học Viên</h1>
+            <p class="subtitle">Vui lòng điền đầy đủ thông tin và chọn nhóm</p>
+        </header>
+
+        <div class="content">
+            <!-- Registration Form -->
+            <div class="form-section">
+                <form id="registrationForm">
+                    <div class="form-group">
+                        <label for="name">Họ và tên <span class="required">*</span></label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            placeholder="Nhập họ và tên đầy đủ"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email <span class="required">*</span></label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="example@email.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Số điện thoại <span class="required">*</span></label>
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            placeholder="0123456789"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="school">Trường học <span class="required">*</span></label>
+                        <input
+                            type="text"
+                            id="school"
+                            name="school"
+                            placeholder="Tên trường học"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="group">Chọn nhóm <span class="required">*</span></label>
+                        <select id="group" name="group" required>
+                            <option value="">-- Chọn nhóm --</option>
+                        </select>
+                        <div class="group-info" id="groupInfo"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            Đăng Ký
+                        </button>
+                        <button type="button" class="btn-reset" onclick="document.getElementById('registrationForm').reset();">
+                            Xóa
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Group Status Panel -->
+            <div class="status-section">
+                <h2>Tình Trạng Các Nhóm</h2>
+                <div id="groupStatus" class="group-status-list">
+                    <div class="loading">Đang tải thông tin nhóm...</div>
+                </div>
+                <div class="refresh-info">
+                    <button type="button" class="btn-refresh" onclick="loadGroups()">
+                        🔄 Làm mới
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div id="messageContainer" class="message-container"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Student Group Registration System</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
