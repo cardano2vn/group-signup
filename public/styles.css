@@ -21,21 +21,44 @@ body {
     overflow: hidden;
 }
 
-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+.logo-header {
+    background: white;
     padding: 30px;
-    text-align: center;
+    display: grid;
+    grid-template-columns: 234px 1fr 234px;
+    align-items: center;
+    gap: 30px;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-header h1 {
+.logo-header .logo {
+    max-width: 234px;
+    height: auto;
+    justify-self: start;
+}
+
+.logo-header .header-text {
+    text-align: center;
+    grid-column: 2;
+}
+
+.logo-header h1 {
     font-size: 2.5em;
     margin-bottom: 10px;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-header .subtitle {
+.logo-header .subtitle {
     font-size: 1.1em;
-    opacity: 0.9;
+    color: #666;
+}
+
+header {
+    display: none;
 }
 
 .content {
@@ -48,6 +71,28 @@ header .subtitle {
 @media (max-width: 968px) {
     .content {
         grid-template-columns: 1fr;
+    }
+
+    .logo-header {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .logo-header .logo {
+        justify-self: center;
+    }
+
+    .logo-header .header-text {
+        grid-column: 1;
+    }
+
+    .logo-header h1 {
+        font-size: 2em;
+    }
+
+    .logo-header .subtitle {
+        font-size: 1em;
     }
 }
 

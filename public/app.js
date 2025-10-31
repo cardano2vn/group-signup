@@ -143,6 +143,19 @@ function setupFormSubmission() {
             return;
         }
 
+        // Validate reCAPTCHA
+        const recaptchaResponse = grecaptcha.getResponse();
+        const recaptchaError = document.getElementById('recaptchaError');
+
+        if (!recaptchaResponse) {
+            recaptchaError.style.display = 'block';
+            showMessage('Vui lòng xác minh reCAPTCHA', 'error');
+            return;
+        }
+
+        recaptchaError.style.display = 'none';
+        formData.recaptchaToken = recaptchaResponse;
+
         // Disable submit button
         submitBtn.disabled = true;
         submitBtn.textContent = 'Đang đăng ký...';
@@ -161,14 +174,17 @@ function setupFormSubmission() {
             if (data.success) {
                 showMessage('Đăng ký thành công!', 'success');
                 form.reset();
+                grecaptcha.reset(); // Reset reCAPTCHA
                 // Reload groups to update counts
                 await loadGroups();
             } else {
                 showMessage(data.message || 'Đăng ký thất bại', 'error');
+                grecaptcha.reset(); // Reset reCAPTCHA on error
             }
         } catch (error) {
             console.error('Error submitting form:', error);
             showMessage('Lỗi khi đăng ký. Vui lòng thử lại.', 'error');
+            grecaptcha.reset(); // Reset reCAPTCHA on error
         } finally {
             // Re-enable submit button
             submitBtn.disabled = false;
@@ -223,8 +239,8 @@ function escapeHtml(text) {
 }
 
 /**
- * Auto refresh groups every 30 seconds
+ * Auto refresh groups every 1 minute
  */
 setInterval(() => {
     loadGroups();
-}, 30000);
+}, 60000);

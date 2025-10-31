@@ -182,4 +182,39 @@ export class GoogleSheetService {
       throw new Error('Failed to check group status');
     }
   }
+
+  /**
+   * Check if email or phone number already exists in the sheet
+   */
+  async checkDuplicate(email: string, phone: string): Promise<{ isDuplicate: boolean; field?: string }> {
+    try {
+      const students = await this.getAllStudents();
+
+      // Normalize phone number for comparison (remove spaces and dashes)
+      const normalizedPhone = phone.replace(/[\s-]/g, '');
+
+      // Check for duplicate email
+      const emailExists = students.some(student =>
+        student.email.toLowerCase() === email.toLowerCase()
+      );
+
+      if (emailExists) {
+        return { isDuplicate: true, field: 'email' };
+      }
+
+      // Check for duplicate phone
+      const phoneExists = students.some(student =>
+        student.phone.replace(/[\s-]/g, '') === normalizedPhone
+      );
+
+      if (phoneExists) {
+        return { isDuplicate: true, field: 'phone' };
+      }
+
+      return { isDuplicate: false };
+    } catch (error) {
+      console.error('Error checking for duplicates:', error);
+      throw new Error('Failed to check for duplicate records');
+    }
+  }
 }

@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import cors from 'cors';
+import * as https from 'https';
 import { GoogleSheetService } from './googleSheet';
 
 // Load environment variables
@@ -45,6 +46,57 @@ const GROUP_NAMES = process.env.GROUP_NAMES!.split(',').map(name => name.trim())
     process.exit(1);
   }
 })();
+
+// Helper function to verify reCAPTCHA
+async function verifyRecaptcha(token: string): Promise<boolean> {
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+
+  if (!secretKey) {
+    console.error('RECAPTCHA_SECRET_KEY is not set');
+    return false;
+  }
+
+  return new Promise((resolve) => {
+    const postData = `secret=${secretKey}&response=${token}`;
+
+    const options = {
+      hostname: 'www.google.com',
+      port: 443,
+      path: '/recaptcha/api/siteverify',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(data);
+          resolve(result.success === true);
+        } catch (error) {
+          console.error('Error parsing reCAPTCHA response:', error);
+          resolve(false);
+        }
+      });
+    });
+
+    req.on('error', (error) => {
+      console.error('Error verifying reCAPTCHA:', error);
+      resolve(false);
+    });
+
+    req.write(postData);
+    req.end();
+  });
+}
 
 // API Routes
 
@@ -97,13 +149,29 @@ app.get('/api/students', async (req: Request, res: Response) => {
  */
 app.post('/api/register', async (req: Request, res: Response) => {
   try {
-    const { name, email, phone, school, group } = req.body;
+    const { name, email, phone, school, group, recaptchaToken } = req.body;
 
     // Validation
     if (!name || !email || !phone || !school || !group) {
       return res.status(400).json({
         success: false,
         message: 'All fields are required'
+      });
+    }
+
+    // Verify reCAPTCHA
+    if (!recaptchaToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'reCAPTCHA verification is required'
+      });
+    }
+
+    const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+    if (!isRecaptchaValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'reCAPTCHA verification failed. Please try again.'
       });
     }
 
@@ -130,6 +198,16 @@ app.post('/api/register', async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         message: 'Invalid group selection'
+      });
+    }
+
+    // Check for duplicate email or phone number
+    const duplicateCheck = await googleSheetService.checkDuplicate(email, phone);
+    if (duplicateCheck.isDuplicate) {
+      const fieldName = duplicateCheck.field === 'email' ? 'Email' : 'Phone number';
+      return res.status(400).json({
+        success: false,
+        message: `${fieldName} already exists. Please use a different ${duplicateCheck.field}.`
       });
     }
 

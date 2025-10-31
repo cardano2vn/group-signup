@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký Nhóm Học Viên</title>
+    <title>Đăng Ký Nhóm- CLB Blockchain</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Đăng Ký Nhóm Học Viên</h1>
-            <p class="subtitle">Vui lòng điền đầy đủ thông tin và chọn nhóm</p>
-        </header>
+        <div class="logo-header">
+            <img src="https://res.cloudinary.com/dtlsezkru/image/upload/v1760329077/Color_V_5x_wa79w7.png" alt="C2VN Logo" class="logo">
+            <div class="header-text">
+                <h2>FORM ĐĂNG KÝ NHÓM</h2>
+                <h2>CLB SINH VIÊN CÙNG NHAU TÌM HIỂU BLOCKCHAIN</h2>
+            </div>
+        </div>
+        <header></header>
 
         <div class="content">
             <!-- Registration Form -->
@@ -51,7 +56,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="school">Trường học <span class="required">*</span></label>
+                        <label for="school">Trường bạn đang học: <span class="required">*</span></label>
                         <input
                             type="text"
                             id="school"
@@ -69,6 +74,13 @@
                         <div class="group-info" id="groupInfo"></div>
                     </div>
 
+                    <div class="form-group">
+                        <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
+                        <div id="recaptchaError" class="error-message" style="display: none; color: red; margin-top: 5px;">
+                            Please complete the reCAPTCHA verification
+                        </div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="submit" class="btn-submit" id="submitBtn">
                             Đăng Ký
@@ -82,7 +94,7 @@
 
             <!-- Group Status Panel -->
             <div class="status-section">
-                <h2>Tình Trạng Các Nhóm</h2>
+                <h2>TÌNH TRẠNG CÁC NHÓM</h2>
                 <div id="groupStatus" class="group-status-list">
                     <div class="loading">Đang tải thông tin nhóm...</div>
                 </div>
@@ -99,7 +111,7 @@
     </div>
 
     <footer>
-        <p>&copy; 2025 Student Group Registration System</p>
+        <p>&copy; 2025 CARDANO2VN</p>
     </footer>
 
     <script src="app.js"></script>
