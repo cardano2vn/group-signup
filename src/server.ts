@@ -36,16 +36,35 @@ const googleSheetService = new GoogleSheetService(
 // Parse group names from environment variable
 const GROUP_NAMES = process.env.GROUP_NAMES!.split(',').map(name => name.trim());
 
-// Initialize sheet on startup
-(async () => {
+// Initialize sheet on startup (non-blocking for serverless)
+let isSheetInitialized = false;
+const initPromise = (async () => {
   try {
     await googleSheetService.initializeSheet();
     console.log('Google Sheet initialized successfully');
+    isSheetInitialized = true;
   } catch (error) {
     console.error('Failed to initialize Google Sheet:', error);
-    process.exit(1);
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
   }
 })();
+
+// Middleware to ensure sheet is initialized before handling requests
+app.use(async (req, res, next) => {
+  if (!isSheetInitialized) {
+    try {
+      await initPromise;
+    } catch (error) {
+      return res.status(503).json({
+        success: false,
+        message: 'Service temporarily unavailable - Google Sheets initialization failed'
+      });
+    }
+  }
+  next();
+});
 
 // Helper function to verify reCAPTCHA
 async function verifyRecaptcha(token: string): Promise<boolean> {

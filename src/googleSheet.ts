@@ -27,9 +27,17 @@ export class GoogleSheetService {
 
     // Try to load credentials from environment variables (for Vercel deployment)
     if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+      // Handle private key - it might have literal \n or actual newlines
+      let privateKey = process.env.GOOGLE_PRIVATE_KEY;
+
+      // If the key doesn't have actual newlines, replace literal \n with newlines
+      if (!privateKey.includes('\n') && privateKey.includes('\\n')) {
+        privateKey = privateKey.replace(/\\n/g, '\n');
+      }
+
       credentials = {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+        private_key: privateKey,
       };
       console.log('Using Google credentials from environment variables');
     } else {
