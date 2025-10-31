@@ -259,8 +259,13 @@ app.use((err: Error, req: Request, res: Response, next: any) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`Groups: ${GROUP_NAMES.join(', ')}`);
-});
+// Start server (only for local development)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Groups: ${GROUP_NAMES.join(', ')}`);
+  });
+}
+
+// Export the Express app for Vercel
+export default app;

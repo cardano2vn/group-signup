@@ -23,8 +23,20 @@ export class GoogleSheetService {
     this.spreadsheetId = spreadsheetId;
     this.maxStudentsPerGroup = maxStudentsPerGroup;
 
-    // Load credentials from JSON file
-    const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf-8'));
+    let credentials;
+
+    // Try to load credentials from environment variables (for Vercel deployment)
+    if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+      credentials = {
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      };
+      console.log('Using Google credentials from environment variables');
+    } else {
+      // Fall back to loading credentials from JSON file (for local development)
+      credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf-8'));
+      console.log('Using Google credentials from file');
+    }
 
     // Create JWT client for authentication
     const auth = new google.auth.JWT(
