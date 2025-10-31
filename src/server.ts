@@ -120,6 +120,17 @@ async function verifyRecaptcha(token: string): Promise<boolean> {
 // API Routes
 
 /**
+ * GET /api/config
+ * Get public configuration (e.g., reCAPTCHA site key)
+ */
+app.get('/api/config', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY || ''
+  });
+});
+
+/**
  * GET /api/groups
  * Get all groups with their current status
  */

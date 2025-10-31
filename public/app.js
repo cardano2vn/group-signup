@@ -1,11 +1,74 @@
 // Global variables
 let groups = [];
+let recaptchaSiteKey = '';
+let recaptchaWidgetId = null;
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadConfig();
     loadGroups();
     setupFormSubmission();
 });
+
+/**
+ * Load configuration from the server
+ */
+async function loadConfig() {
+    try {
+        const response = await fetch('/api/config');
+        const data = await response.json();
+
+        if (data.success && data.recaptchaSiteKey) {
+            recaptchaSiteKey = data.recaptchaSiteKey;
+            await loadRecaptchaScript();
+        } else {
+            console.error('Failed to load reCAPTCHA site key');
+        }
+    } catch (error) {
+        console.error('Error loading configuration:', error);
+    }
+}
+
+/**
+ * Dynamically load the reCAPTCHA script
+ */
+function loadRecaptchaScript() {
+    return new Promise((resolve, reject) => {
+        if (window.grecaptcha) {
+            renderRecaptcha();
+            resolve();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit';
+        script.async = true;
+        script.defer = true;
+        script.onerror = reject;
+
+        // Define the callback function globally
+        window.onRecaptchaLoad = () => {
+            renderRecaptcha();
+            resolve();
+        };
+
+        document.head.appendChild(script);
+    });
+}
+
+/**
+ * Render the reCAPTCHA widget
+ */
+function renderRecaptcha() {
+    if (recaptchaSiteKey && window.grecaptcha) {
+        const container = document.getElementById('recaptcha-container');
+        if (container && !recaptchaWidgetId) {
+            recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
+                'sitekey': recaptchaSiteKey
+            });
+        }
+    }
+}
 
 /**
  * Load groups from the server
@@ -144,7 +207,7 @@ function setupFormSubmission() {
         }
 
         // Validate reCAPTCHA
-        const recaptchaResponse = grecaptcha.getResponse();
+        const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse(recaptchaWidgetId) : '';
         const recaptchaError = document.getElementById('recaptchaError');
 
         if (!recaptchaResponse) {
@@ -174,17 +237,23 @@ function setupFormSubmission() {
             if (data.success) {
                 showMessage('Đăng ký thành công!', 'success');
                 form.reset();
-                grecaptcha.reset(); // Reset reCAPTCHA
+                if (window.grecaptcha && recaptchaWidgetId !== null) {
+                    grecaptcha.reset(recaptchaWidgetId); // Reset reCAPTCHA
+                }
                 // Reload groups to update counts
                 await loadGroups();
             } else {
                 showMessage(data.message || 'Đăng ký thất bại', 'error');
-                grecaptcha.reset(); // Reset reCAPTCHA on error
+                if (window.grecaptcha && recaptchaWidgetId !== null) {
+                    grecaptcha.reset(recaptchaWidgetId); // Reset reCAPTCHA on error
+                }
             }
         } catch (error) {
             console.error('Error submitting form:', error);
             showMessage('Lỗi khi đăng ký. Vui lòng thử lại.', 'error');
-            grecaptcha.reset(); // Reset reCAPTCHA on error
+            if (window.grecaptcha && recaptchaWidgetId !== null) {
+                grecaptcha.reset(recaptchaWidgetId); // Reset reCAPTCHA on error
+            }
         } finally {
             // Re-enable submit button
             submitBtn.disabled = false;
