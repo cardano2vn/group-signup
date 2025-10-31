@@ -1,8 +1,6 @@
 node_modules
 .env
 .env.example
-src
-tsconfig.json
 README.md
 .git
 .gitignore
